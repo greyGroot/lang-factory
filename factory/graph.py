@@ -1,5 +1,3 @@
-"""LangGraph Software Factory — Core Workflow Graph."""
-
 from typing import Literal
 from langgraph.graph import StateGraph, START, END
 

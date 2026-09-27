@@ -504,9 +504,14 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Direct Subprocess):* Standard `subprocess.run(capture_output=True, text=True)`.
   - *Option B (Shell Runner Wrapper):* Configurable command runner class with timeout and output truncation guards.
 - **Step Success Criteria:**
-  - [ ] `run_gate` function executes arbitrary commands and returns a structured `GateResult`.
-  - [ ] A passing command returns `ok=True, exit_code=0`.
-  - [ ] A failing command returns `ok=False, exit_code!=0` with captured `stderr`.
+  - [x] `run_gate` function executes arbitrary commands and returns a structured `GateResult`.
+  - [x] A passing command returns `ok=True, exit_code=0`.
+  - [x] A failing command returns `ok=False, exit_code!=0` with captured `stderr`.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option A (Direct Functional Runner with `subprocess.run`).
+  - **Artifacts Created:**
+    - [`factory/gates.py`](file:///d:/2grow/lang-factory/factory/gates.py): Universal deterministic gate runner exporting `GateResult` dataclass and `run_gate()` helper with `capture_output=True`, `text=True`, `shell=True`, timeout safeguards, and error/exception handling.
+  - **Verification:** Successfully executed verification in terminal testing both passing (`git --version` -> `ok=True, exit_code=0`) and failing (`exit(42)` -> `ok=False, exit_code=42`) command scenarios.
 
 ---
 
