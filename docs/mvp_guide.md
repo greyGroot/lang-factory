@@ -455,15 +455,23 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
 ---
 
 ### Step 2: Story Contract & State Schema Definition (~1 hour)
-- **Goal:** Create the initial story file (`docs/stories/crm-004/story.md`) and define the state schema in `factory/state.py`.
+- **Goal:** Create the initial story file (`docs/stories/todo-app/story.md`) and define the state schema in `factory/state.py`.
 - **TS/JS Analogy:** Defining a TypeScript interface (`interface FactoryState { ... }`) and a Markdown input document.
 - **Options the Agent Proposes:**
   - *Option A (Standard & Lightweight):* Python `typing.TypedDict` (exact counterpart of a TS `type` or `interface`).
   - *Option B (Runtime Validated):* Pydantic `BaseModel` (counterpart of TS runtime validation libraries like Zod).
 - **Step Success Criteria:**
-  - [ ] Story file created with acceptance criteria and constraints.
-  - [ ] `factory/state.py` defines all required state fields with proper type annotations.
-  - [ ] Schema imports without syntax or typing errors.
+  - [x] Story file created with acceptance criteria and constraints.
+  - [x] `factory/state.py` defines all required state fields with proper type annotations.
+  - [x] Schema imports without syntax or typing errors.
+- **Completed Implementation Summary:**
+  - **Tool & Approach Selected:** Option A (`typing.TypedDict` and `typing.Literal`).
+  - **Artifacts Created:**
+    - [docs/stories/todo-app/story.md](file:///d:/2grow/lang-factory/docs/stories/todo-app/story.md): Client-side React Todo app with `localStorage` persistence, deterministic test IDs, and explicit QA verification scope.
+    - [.gitignore](file:///d:/2grow/lang-factory/.gitignore): Project-wide ignores for Python, virtual environments, factory artifacts, and Node/React dependencies.
+    - [.vscode/settings.json](file:///d:/2grow/lang-factory/.vscode/settings.json): IDE configuration for `onFocusChange` auto-saving and automatic formatting on save.
+    - [factory/state.py](file:///d:/2grow/lang-factory/factory/state.py): `FactoryState` schema tracking story metadata, attempts, conversation sessions, gate results, diffs, and lifecycle states.
+  - **Verification:** Successfully validated `from factory.state import FactoryState` using `uv run python`.
 
 ---
 
@@ -474,9 +482,18 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Declarative):* Using `builder.add_conditional_edges()` with a routing function.
   - *Option B (Explicit Navigation):* Using LangGraph `Command(goto=...)` inside node functions.
 - **Step Success Criteria:**
-  - [ ] Graph compiles cleanly with all required nodes (`prepare`, `dev`, `qa`, etc.).
-  - [ ] Running `langgraph dev` renders the complete workflow visually in LangGraph Studio.
-  - [ ] A mock run transitions through nodes from START to END.
+  - [x] Graph compiles cleanly with all required nodes (`prepare`, `dev`, `qa`, etc.).
+  - [x] Running `langgraph dev` renders the complete workflow visually in LangGraph Studio.
+  - [x] A mock run transitions through nodes from START to END.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option A (Declarative Routing with `add_conditional_edges` and router functions).
+  - **Artifacts Created & Configured:**
+    - [factory/graph.py](file:///d:/2grow/lang-factory/factory/graph.py): Complete workflow definition containing 9 mock nodes, router functions for conditional gating and retry loops, and compilation into `graph`.
+    - [langgraph.json](file:///d:/2grow/lang-factory/langgraph.json): Configuration file exposing the `factory` graph to LangGraph Studio and CLI.
+    - [pyproject.toml](file:///d:/2grow/lang-factory/pyproject.toml): Added `langgraph-cli[inmem]` dependency.
+  - **Verification:**
+    - Executed programmatic mock run via `uv run python`, successfully traversing all nodes from `START` to `END` and outputting `Final Status: passed`.
+    - Launched `uv run langgraph dev` and verified the full interactive visual topology in LangGraph Studio.
 
 ---
 

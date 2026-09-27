@@ -9,6 +9,7 @@ requires-python = ">=3.14"
 dependencies = [
     "langgraph>=1.2.12",
     "langgraph-checkpoint-sqlite>=3.1.1",
+    "langgraph-cli[inmem]>=0.4.32",
     "pytest>=9.1.1",
     "ruff>=0.16.9",
 ]
