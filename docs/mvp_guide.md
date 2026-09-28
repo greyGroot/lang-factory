@@ -522,8 +522,13 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Simple Module Functions):* Lightweight procedural functions using `pathlib.Path`.
   - *Option B (Artifact Manager Class):* Encapsulated manager class tracking active artifact paths and diff patches.
 - **Step Success Criteria:**
-  - [ ] Calling the artifact initializer creates the run folder structure with timestamped ID.
-  - [ ] Failure reports write valid JSON containing `gate`, `exit_code`, `failed_tests`, and `stderr_tail`.
+  - [x] Calling the artifact initializer creates the run folder structure with timestamped ID.
+  - [x] Failure reports write valid JSON containing `gate`, `exit_code`, `failed_tests`, and `stderr_tail`.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option A (Functional Module using `pathlib.Path`).
+  - **Artifacts Created:**
+    - [`factory/artifacts.py`](file:///d:/2grow/lang-factory/factory/artifacts.py): Functions `init_run_dir()` for structured run tree setup (`.factory/runs/{story_id}/{run_id}/dev` & `qa`), `save_gate_result()` for raw gate JSON outputs, and `create_failure_report()` / `save_failure_report()` for machine-readable failure payloads with `stderr` tails.
+  - **Verification:** Successfully executed verification command creating run folder `.factory/runs/todo-app/test-run-001/` and persisting both `dev-gate.json` and `dev-gate-failure.json`.
 
 ---
 
