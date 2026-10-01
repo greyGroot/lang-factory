@@ -585,8 +585,15 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Pytest Subdirectory):* Run verification tests using `pytest verification/{story_id}`.
   - *Option B (Custom Test Runner Script):* Run verification tests through a dedicated gate script.
 - **Step Success Criteria:**
-  - [ ] QA agent writes verification tests only under `verification/{story_id}/**`.
-  - [ ] Verification gate executes the tests independently and collects pass/fail results.
+  - [x] QA agent writes verification tests only under `verification/{story_id}/**`.
+  - [x] Verification gate executes the tests independently and collects pass/fail results.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option B (Dedicated Verification Gate Module in `factory/gates.py` + Role Prompt Builders).
+  - **Artifacts Created & Updated:**
+    - [`factory/gates.py`](file:///home/user/2grow/lang-factory/factory/gates.py): Added `run_verification_gate()` with test directory existence guard, verbose `pytest` execution on `verification/{story_id}`, and structured `GateResult` output.
+    - [`factory/prompts.py`](file:///home/user/2grow/lang-factory/factory/prompts.py): Created `build_qa_prompt()` and `build_dev_prompt()` enforcing write boundaries, role isolation, and structured failure report attachment.
+    - [`factory/graph.py`](file:///home/user/2grow/lang-factory/factory/graph.py): Wired `qa_scope_gate` to enforce QA write boundaries via `enforce_scope()` and wired `verification` node to run `run_verification_gate()`.
+  - **Verification:** Executed verification gate with sample test in `verification/todo-app/test_sample.py` and confirmed `GateResult(ok=True, exit_code=0)` via pytest.
 
 ---
 

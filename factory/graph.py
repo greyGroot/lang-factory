@@ -1,12 +1,15 @@
 from typing import Literal
-from langgraph.graph import StateGraph, START, END
 
+from langgraph.graph import END, START, StateGraph
+
+from factory.gates import run_verification_gate
+from factory.scope import enforce_scope
 from factory.state import FactoryState
-
 
 # =====================================================================
 # 1. Mock Node Functions (Stub handlers returning partial state updates)
 # =====================================================================
+
 
 def prepare(state: FactoryState) -> dict:
     """Initialize run context and default attempt counter."""
@@ -57,18 +60,37 @@ def qa(state: FactoryState) -> dict:
 
 
 def qa_scope_gate(state: FactoryState) -> dict:
-    """Mock QA scope gate: checks if QA wrote only to verification/."""
-    print("[qa_scope_gate] Checking QA write scope...")
+    """Inspect Git changes to ensure QA only modified verification/{story_id}/**."""
+    story_id = state.get("story_id", "todo-app")
+    repo_root = state.get("repo_root", ".")
+    print(f"[qa_scope_gate] Checking QA write scope for story '{story_id}'...")
+    # Enforce QA write boundaries using git status
+    scope_result = enforce_scope(role="qa", story_id=story_id, cwd=repo_root)
     return {
-        "qa_scope_ok": True,
+        "qa_scope_ok": scope_result.ok,
+        "changed_files": scope_result.changed_files,
     }
 
 
 def verification(state: FactoryState) -> dict:
-    """Mock Verification gate: runs independent verification tests."""
-    print("[verification] Running independent verification test suite...")
+    """Run independent verification tests located in verification/{story_id}."""
+    story_id = state.get("story_id", "todo-app")
+    repo_root = state.get("repo_root", ".")
+    print(f"[verification] Executing verification suite for '{story_id}'...")
+    # Run the dedicated verification gate
+    gate_result = run_verification_gate(story_id=story_id, cwd=repo_root)
+
+    if gate_result.ok:
+        print(f"[verification] PASS: Verification tests passed for '{story_id}'.")
+    else:
+        print(
+            f"[verification] FAIL: Verification tests failed (exit code {gate_result.exit_code})."
+        )
+        if gate_result.stderr:
+            print(f"[verification] stderr: {gate_result.stderr[:200]}")
+
     return {
-        "verification_ok": True,
+        "verification_ok": gate_result.ok,
     }
 
 
@@ -91,6 +113,7 @@ def failed(state: FactoryState) -> dict:
 # =====================================================================
 # 2. Router Functions (Conditional Edge Logic)
 # =====================================================================
+
 
 def route_dev_scope(state: FactoryState) -> Literal["dev_checks", "failed"]:
     """Route after Dev scope inspection."""
@@ -116,7 +139,9 @@ def route_qa_scope(state: FactoryState) -> Literal["verification", "failed"]:
     return "failed"
 
 
-def route_verification(state: FactoryState) -> Literal["human_approval", "dev", "failed"]:
+def route_verification(
+    state: FactoryState,
+) -> Literal["human_approval", "dev", "failed"]:
     """Route after independent verification test suite."""
     if state.get("verification_ok", False):
         return "human_approval"
@@ -129,6 +154,7 @@ def route_verification(state: FactoryState) -> Literal["human_approval", "dev", 
 # =====================================================================
 # 3. Graph Construction & Compilation
 # =====================================================================
+
 
 def create_factory_graph():
     """Build and compile the LangGraph Software Factory workflow."""

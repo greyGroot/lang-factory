@@ -39,6 +39,7 @@ Always refer to:
 3. **Step-by-Step Guided Implementation:**
    - Once a path is selected, break down the implementation into small, digestible pieces.
    - Guide the developer on what to write and explain the syntax and architectural rationale.
+   - **Always include concise explanatory comments and docstrings in code snippets** explaining what the code is doing and why, to help a developer transitioning from TypeScript/JavaScript.
    - Avoid walls of code; keep the session interactive.
 
 4. **Review and Verify:**
