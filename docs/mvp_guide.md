@@ -604,9 +604,14 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Conditional Edge Routing):* Routing function checks `state['attempt'] < state['max_attempts']`.
   - *Option B (Explicit Command Goto):* Node returns `Command(goto='dev')` on retry or `Command(goto='failed')` when exhausted.
 - **Step Success Criteria:**
-  - [ ] A verification failure routes back to Dev with the structured failure report attached.
-  - [ ] Dev prompt incorporates previous failure details and reuses the Antigravity conversation ID.
-  - [ ] Exceeding max attempts (e.g., 3) routes directly to failure/escalation.
+  - [x] A verification failure routes back to Dev with the structured failure report attached.
+  - [x] Dev prompt incorporates previous failure details and reuses the Antigravity conversation ID.
+  - [x] Exceeding max attempts (e.g., 3) routes directly to failure/escalation.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option A (Declarative Conditional Edge Routing with state updates in nodes).
+  - **Artifacts Created & Updated:**
+    - [`factory/graph.py`](file:///home/user/2grow/lang-factory/factory/graph.py): Updated `verification` node to produce structured machine-readable failure reports via `create_failure_report()`; updated `dev` node to increment attempt counter on repair and build repair prompts incorporating error details; updated router functions (`route_verification`, `route_dev_checks`) to purely evaluate `attempt < max_attempts`.
+  - **Verification:** Successfully executed simulation demonstrating the complete 3-attempt repair cycle (Initial Attempt 1 -> Repair Attempt 2 -> Repair Attempt 3 -> Max attempts exhausted -> `failed`).
 
 ---
 
