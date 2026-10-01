@@ -30,7 +30,7 @@ We are working on:
 
 ### My Background & Context:
 - I have strong experience in **TypeScript and JavaScript**, but **low familiarity with Python**.
-- Whenever you introduce Python syntax, types, decorators, packaging, or standard library modules, **explain them using direct TypeScript/JavaScript analogies and comparisons**.
+- Provide TypeScript/JavaScript analogies and comparisons **only when I explicitly ask for an explanation**, not for every standard concept or step.
 
 ---
 

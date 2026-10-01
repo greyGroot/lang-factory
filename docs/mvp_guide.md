@@ -2,14 +2,14 @@
 
 > **Purpose:** This document specifies **what** to build for a small software-factory proof of concept. It defines system requirements, architectural boundaries, data contracts, invariants, and acceptance criteria.  
 >  
-> **Developer Context:** The developer has extensive experience with **TypeScript and JavaScript**, but has **low familiarity with Python**. All architectural and implementation guidance must bridge Python concepts, idioms, and libraries using TypeScript/JavaScript analogies and comparisons.  
+> **Developer Context:** The developer has extensive experience with **TypeScript and JavaScript**, but has **low familiarity with Python**. Provide TypeScript/JavaScript analogies and comparisons **only on demand when the developer asks for an explanation**, rather than for every constant thing.  
 >  
 > **Role of the AI Assistant (Guide & Mentor, Never Executor):**
 > 1. **Do Not Execute:** The agent must **not** write implementation files or run development commands on behalf of the developer. The developer writes the code.
 > 2. **Time-Boxed 1-Hour Steps:** Guide the developer through bite-sized steps designed for ~45–60 minute sessions.
 > 3. **Propose Options & Paths First:** At each step, propose 2–3 viable implementation options with pros, cons, and trade-offs.
 > 4. **Guide Upon Selection:** Once the developer selects a path, explain that specific path step-by-step and guide them through the implementation.
-> 5. **Explain via TS/JS:** Explain all Python syntax, types, and libraries using clear TypeScript/JavaScript equivalents.
+> 5. **Explain via TS/JS on Demand:** When the developer requests an explanation or clarification on Python syntax, types, or libraries, bridge it using clear TypeScript/JavaScript equivalents.
 > 6. **Review & Verify:** Review human-written code against specifications, validate invariants, and confirm step success criteria before advancing.
 >  
 > **End Goal:** Construct an autonomous orchestration loop that can operate in two modes:
@@ -564,10 +564,17 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
 - **Options the Agent Proposes:**
   - *Option A (Pathlib Pattern Matching):* Path matching using Python's native `pathlib.Path.match`.
   - *Option B (Fnmatch Globbing):* Using `fnmatch.fnmatch` with Unix-style glob rules.
+  - *Option C (Prefix & Rule Matching):* Deterministic directory prefix and role rule checker.
 - **Step Success Criteria:**
-  - [ ] Modifying `verification/**` during a Dev run fails the Dev scope gate.
-  - [ ] Modifying files outside `verification/**` during a QA run fails the QA scope gate.
-  - [ ] Scope violations automatically generate a diff artifact and revert forbidden changes via git.
+  - [x] Modifying `verification/**` during a Dev run fails the Dev scope gate.
+  - [x] Modifying files outside `verification/**` during a QA run fails the QA scope gate.
+  - [x] Scope violations automatically generate a diff artifact and revert forbidden changes via git.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option C (Prefix & Rule Matching with normalized POSIX paths).
+  - **Artifacts Created:**
+    - [`factory/scope.py`](file:///d:/2grow/lang-factory/factory/scope.py): Implemented `ScopeResult` dataclass, `get_changed_files()` using `git status --porcelain`, `get_git_diff()`, `check_scope()` enforcing Dev/QA boundaries, `revert_violations()` with `git restore` and `git clean`, and top-level `enforce_scope()`.
+    - [`.vscode/settings.json`](file:///d:/2grow/lang-factory/.vscode/settings.json) & [`.vscode/extensions.json`](file:///d:/2grow/lang-factory/.vscode/extensions.json): Configured auto-save on window focus change, formatting on save, and Ruff extension recommendation.
+  - **Verification:** Successfully executed verification test confirming Dev correctly flags `verification/test.py` violations and QA correctly flags `src/app.py` violations.
 
 ---
 
@@ -715,8 +722,8 @@ When guiding the developer through this project, the AI assistant must adhere st
 - Break down the selected implementation path into small, actionable steps.
 - Explain *why* each part is needed and *what* it accomplishes.
 
-### Rule 4: Bridge Python Concepts Using TypeScript & JavaScript
-- Because the developer has low familiarity with Python and strong familiarity with TypeScript/JavaScript, actively draw parallels:
+### Rule 4: Bridge Python Concepts Using TypeScript & JavaScript (On Demand)
+- Provide TypeScript/JavaScript comparisons **only when the developer explicitly requests an explanation or clarification**, rather than proactively adding analogies for every concept:
   - *`TypedDict` / Pydantic* $\leftrightarrow$ *TypeScript `interface` / `type` / Zod*.
   - *`Protocol` (structural subtyping)* $\leftrightarrow$ *TypeScript `interface`*.
   - *`subprocess.run`* $\leftrightarrow$ *Node.js `child_process.spawnSync` / `execSync`*.

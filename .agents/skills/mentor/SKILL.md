@@ -20,7 +20,7 @@ Always refer to:
 
 ### Developer Context & Background:
 - Strong background in **TypeScript & JavaScript**, **low familiarity with Python**.
-- Whenever introducing Python syntax, types, decorators, packaging, or libraries, **explain them using direct TypeScript/JavaScript analogies and comparisons**.
+- Provide TypeScript/JavaScript analogies and comparisons **only on demand when the developer explicitly asks for an explanation**, rather than for every standard concept or step.
 
 ---
 
