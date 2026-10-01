@@ -27,7 +27,7 @@ def prepare(state: FactoryState) -> dict:
     print("[prepare] Initializing factory workflow run...")
     return {
         "status": "running",
-        "attempt": state.get("attempt", 1),
+        "attempt": 1,
         "max_attempts": state.get("max_attempts", 3),
         "changed_files": [],
         "failure_report": None,
@@ -38,13 +38,16 @@ def dev(state: FactoryState) -> dict:
     """Execute Dev agent: implements feature or repairs based on failure report.
 
     Why: On retries, Dev receives the structured failure report from previous gate runs
-    and reuses the existing conversation session to perform targeted bug fixes.
+    and increments the attempt counter in graph state.
     """
-    attempt = state.get("attempt", 1)
     story_id = state.get("story_id", "todo-app")
     story_path = state.get("story_path", f"docs/stories/{story_id}/story.md")
     failure_report = state.get("failure_report")
     conversation_id = state.get("dev_conversation_id", f"dev-session-{story_id}")
+
+    # Calculate current attempt: if this is a repair, increment attempt count in state
+    current_attempt = state.get("attempt", 1)
+    attempt = current_attempt + 1 if failure_report is not None else current_attempt
 
     # Read story specification
     story_file = Path(story_path)
@@ -56,7 +59,9 @@ def dev(state: FactoryState) -> dict:
 
     if failure_report:
         gate_name = failure_report.get("gate", "unknown")
-        print(f"[dev] REPAIR ATTEMPT {attempt}: Repairing failure from gate '{gate_name}'...")
+        print(
+            f"[dev] REPAIR ATTEMPT {attempt} of {state.get('max_attempts', 3)}: Repairing failure from gate '{gate_name}'..."
+        )
     else:
         print(f"[dev] INITIAL ATTEMPT {attempt}: Implementing story '{story_id}'...")
 
@@ -150,7 +155,9 @@ def verification(state: FactoryState) -> dict:
         }
 
     # On failure, build structured machine-readable failure report
-    print(f"[verification] FAIL: Verification tests failed (exit code {gate_result.exit_code}).")
+    print(
+        f"[verification] FAIL: Verification tests failed (exit code {gate_result.exit_code})."
+    )
     failure_report = create_failure_report(
         gate_name="verification",
         result=gate_result,
@@ -195,14 +202,13 @@ def route_dev_checks(state: FactoryState) -> Literal["qa", "dev", "failed"]:
     if state.get("dev_gate_ok", False):
         return "qa"
 
-    current_attempt = state.get("attempt", 1)
+    attempt = state.get("attempt", 1)
     max_attempts = state.get("max_attempts", 3)
 
-    if current_attempt < max_attempts:
+    if attempt < max_attempts:
         print(
-            f"[router] Dev checks failed. Retrying (Attempt {current_attempt + 1} of {max_attempts})..."
+            f"[router] Dev checks failed. Retrying (Attempt {attempt} < {max_attempts})..."
         )
-        state["attempt"] = current_attempt + 1
         return "dev"
 
     print(f"[router] Dev checks failed. Max attempts ({max_attempts}) exhausted.")
@@ -227,14 +233,13 @@ def route_verification(
     if state.get("verification_ok", False):
         return "human_approval"
 
-    current_attempt = state.get("attempt", 1)
+    attempt = state.get("attempt", 1)
     max_attempts = state.get("max_attempts", 3)
 
-    if current_attempt < max_attempts:
+    if attempt < max_attempts:
         print(
-            f"[router] Verification failed. Retrying with feedback (Attempt {current_attempt + 1} of {max_attempts})..."
+            f"[router] Verification failed. Retrying with feedback (Attempt {attempt} < {max_attempts})..."
         )
-        state["attempt"] = current_attempt + 1
         return "dev"
 
     print(f"[router] Verification failed. Max attempts ({max_attempts}) exhausted.")
