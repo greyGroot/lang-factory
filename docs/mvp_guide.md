@@ -642,9 +642,15 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Dedicated DB File):* Storing checkpoints in `.factory/checkpoints.sqlite`.
   - *Option B (Per-Run Checkpoint DB):* Isolating checkpoint DB per story.
 - **Step Success Criteria:**
-  - [ ] Graph execution state persists to SQLite database.
-  - [ ] Killing the Python process while waiting at the human gate does not lose state.
-  - [ ] Resuming with the same `thread_id` continues the run seamlessly.
+  - [x] Graph execution state persists to SQLite database.
+  - [x] Killing the Python process while waiting at the human gate does not lose state.
+  - [x] Resuming with the same `thread_id` continues the run seamlessly.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option A (Dedicated Central Database at `.factory/checkpoints.sqlite`).
+  - **Artifacts Created & Updated:**
+    - [`factory/graph.py`](file:///d:/2grow/lang-factory/factory/graph.py): Configured `create_factory_graph(checkpointer=None)` to instantiate and use `SqliteSaver` connected to `.factory/checkpoints.sqlite` with `check_same_thread=False`.
+    - [`.factory/test_sqlite_resumption.py`](file:///d:/2grow/lang-factory/.factory/test_sqlite_resumption.py): Created verification harness testing process separation (`start` until `__interrupt__` $\rightarrow$ exit process $\rightarrow$ direct SQLite inspection $\rightarrow$ `resume` in a brand-new Python process).
+  - **Verification:** Successfully executed verification: Process 1 persisted 9 checkpoints to `.factory/checkpoints.sqlite` under `thread-42`, and a completely separate Process 2 restored state by `thread-42` and resumed with `approve` to finish with status `passed`.
 
 ---
 
