@@ -661,8 +661,14 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Synchronous Runner Function):* Blocking function returning final state and artifact paths.
   - *Option B (Generator / Streaming Runner):* Yielding progress events as each node executes, with a final return value.
 - **Step Success Criteria:**
-  - [ ] A Python script or external agent can import `from factory.runner import run_factory`.
-  - [ ] Calling `run_factory(...)` executes the loop headlessly and returns structured JSON results.
+  - [x] A Python script or external agent can import `from factory.runner import run_factory`.
+  - [x] Calling `run_factory(...)` executes the loop headlessly and returns structured JSON results.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option C (Hybrid Runner with Strategy Pattern Reporters & Execution Metrics).
+  - **Artifacts Created:**
+    - [`factory/runner.py`](file:///d:/2grow/lang-factory/factory/runner.py): Implemented `RunStatus` Literal, `RunMetrics` dataclass tracking execution duration and executed nodes, `RunResult` dataclass with `to_dict()`, `ExecutionReporter` protocol with `ConsoleReporter` and `SilentReporter` strategies, collision-proof UUID thread ID generation, robust `try...except...finally` error handling, and clean entrypoint `run_factory(...)`.
+    - [`.factory/test_runner.py`](file:///d:/2grow/lang-factory/.factory/test_runner.py): Verification harness validating headless execution up to interrupt, resumption via `resume_decision="approve"`, silent mode (`stream=False`), and UUID serialization.
+  - **Verification:** Successfully executed verification test suite: all 3 test scenarios passed cleanly with verified metrics and interrupt handling.
 
 ---
 
