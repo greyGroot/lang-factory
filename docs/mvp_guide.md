@@ -622,10 +622,16 @@ The project is structured into self-contained **1-hour sessions (~45–60 minute
   - *Option A (Simple Dict Interrupt):* Pass question and options array to `interrupt({...})`.
   - *Option B (Typed Command Interrupt):* Return typed `Command` with state status updates.
 - **Step Success Criteria:**
-  - [ ] Workflow halts automatically when verification passes.
-  - [ ] Passing `"approve"` resumes to `END (Passed)`.
-  - [ ] Passing `"retry"` resumes and routes back to `dev`.
-  - [ ] Passing `"stop"` resumes to `END (Stopped)`.
+  - [x] Workflow halts automatically when verification passes.
+  - [x] Passing `"approve"` resumes to `END (Passed)`.
+  - [x] Passing `"retry"` resumes and routes back to `dev`.
+  - [x] Passing `"stop"` resumes to `END (Stopped)`.
+- **Completed Implementation Summary:**
+  - **Approach Selected:** Option B (Colocated Node Resumption using LangGraph `Command` and `interrupt()`).
+  - **Artifacts Created & Updated:**
+    - [`factory/graph.py`](file:///d:/2grow/lang-factory/factory/graph.py): Updated `human_approval` node to pause execution using `interrupt(...)` presenting options `["approve", "retry", "stop"]`. On resumption, dynamically routes via `Command(goto=END, update={"status": "passed"})`, `Command(goto="dev", update={"status": "running"})`, or `Command(goto=END, update={"status": "stopped"})`. Removed static edge from `human_approval` and compiled graph with `MemorySaver` checkpointer.
+    - [`verification/todo-app/test_sample.py`](file:///d:/2grow/lang-factory/verification/todo-app/test_sample.py): Updated verification suite test to pass cleanly.
+  - **Verification:** Successfully executed verification tests across all 3 branches: confirmed graph halts automatically at `__interrupt__`, resuming with `"approve"` terminates with `status: "passed"`, resuming with `"retry"` loops back to `dev`, and resuming with `"stop"` terminates with `status: "stopped"`.
 
 ---
 
