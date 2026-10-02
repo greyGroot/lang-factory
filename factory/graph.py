@@ -6,7 +6,9 @@ Why: Defines the state machine graph topology, orchestrating prepare -> dev -> s
 from pathlib import Path
 from typing import Literal
 
-from langgraph.checkpoint.memory import MemorySaver
+import sqlite3
+
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
@@ -275,8 +277,13 @@ def route_verification(
 # =====================================================================
 
 
-def create_factory_graph():
-    """Build and compile the LangGraph Software Factory workflow."""
+def create_factory_graph(checkpointer=None):
+    """Build and compile the LangGraph Software Factory workflow.
+
+    Args:
+        checkpointer: Optional checkpointer instance. If None, initializes
+                      a persistent SqliteSaver pointing to .factory/checkpoints.sqlite.
+    """
     builder = StateGraph(FactoryState)
 
     # Add all nodes
@@ -338,7 +345,13 @@ def create_factory_graph():
     # human_approval dynamically routes via Command(goto=...), so no static edge is needed
     builder.add_edge("failed", END)
 
-    return builder.compile(checkpointer=MemorySaver())
+    if checkpointer is None:
+        db_path = Path(".factory/checkpoints.sqlite")
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(db_path), check_same_thread=False)
+        checkpointer = SqliteSaver(conn)
+
+    return builder.compile(checkpointer=checkpointer)
 
 
 # Export compiled graph instance for Studio & runner
