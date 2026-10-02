@@ -138,6 +138,7 @@ def run_factory(
     checkpoint_db: str = ".factory/checkpoints.sqlite",
     resume_decision: Literal["approve", "retry", "stop"] | None = None,
     stream: bool = True,
+    reporter: ExecutionReporter | None = None,
 ) -> RunResult:
     """Execute or resume the software factory workflow programmatically.
 
@@ -148,6 +149,7 @@ def run_factory(
         checkpoint_db: Path to the SQLite persistence database.
         resume_decision: Human decision ('approve', 'retry', 'stop') when resuming an interrupt.
         stream: If True (default), prints node transitions via ConsoleReporter. If False, runs quietly.
+        reporter: Custom ExecutionReporter strategy. If None, uses ConsoleReporter (if stream) or SilentReporter.
 
     Returns:
         RunResult dataclass with final status, thread ID, interrupt flag, next nodes, state, and metrics.
@@ -156,7 +158,8 @@ def run_factory(
     nodes_executed: list[str] = []
 
     # 1. Обираємо стратегію звітування один раз (без розсипу if stream)
-    reporter: ExecutionReporter = ConsoleReporter() if stream else SilentReporter()
+    if reporter is None:
+        reporter = ConsoleReporter() if stream else SilentReporter()
 
     # 2. Гарантуємо наявність директорії для SQLite
     db_file = Path(checkpoint_db)

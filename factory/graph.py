@@ -345,13 +345,10 @@ def create_factory_graph(checkpointer=None):
     # human_approval dynamically routes via Command(goto=...), so no static edge is needed
     builder.add_edge("failed", END)
 
-    if checkpointer is None:
-        db_path = Path(".factory/checkpoints.sqlite")
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(str(db_path), check_same_thread=False)
-        checkpointer = SqliteSaver(conn)
+    if checkpointer is not None:
+        return builder.compile(checkpointer=checkpointer)
 
-    return builder.compile(checkpointer=checkpointer)
+    return builder.compile()
 
 
 # Export compiled graph instance for Studio & runner

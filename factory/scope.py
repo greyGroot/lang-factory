@@ -57,6 +57,20 @@ def get_git_diff(cwd: str | Path = ".", files: list[str] | None = None) -> str:
     return proc.stdout
 
 
+FRAMEWORK_PREFIXES = (
+    "factory/",
+    ".factory/",
+    ".agents/",
+    ".gemini/",
+    ".vscode/",
+    "docs/",
+    "pyproject.toml",
+    "uv.lock",
+    ".gitignore",
+    "langgraph.json",
+)
+
+
 def check_scope(
     role: Literal["dev", "qa"],
     changed_files: list[str],
@@ -66,6 +80,10 @@ def check_scope(
     qa_prefix = f"verification/{story_id}/"
 
     for path in changed_files:
+        # Ignore changes to the orchestration factory framework itself
+        if any(path == prefix or path.startswith(prefix) for prefix in FRAMEWORK_PREFIXES):
+            continue
+
         if role == "dev":
             if path.startswith("verification/") or path == "verification":
                 violations.append(path)
