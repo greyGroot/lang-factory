@@ -6,7 +6,9 @@ Why: Defines the state machine graph topology, orchestrating prepare -> dev -> s
 from pathlib import Path
 from typing import Literal
 
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import Command, interrupt
 
 from factory.artifacts import create_failure_report
 from factory.gates import run_verification_gate
@@ -169,12 +171,34 @@ def verification(state: FactoryState) -> dict:
     }
 
 
-def human_approval(state: FactoryState) -> dict:
-    """Suspends for human approval when all gates pass."""
-    print("[human_approval] Verification passed. Mock approving run...")
-    return {
-        "status": "passed",
-    }
+def human_approval(state: FactoryState) -> Command[Literal["dev", "__end__"]]:
+    """Suspends for human approval when all gates pass.
+
+    Why: Halts execution via interrupt() to let a human review artifacts and
+    decide whether to approve (passed), retry (back to dev), or stop.
+    """
+    story_id = state.get("story_id", "todo-app")
+    attempt = state.get("attempt", 1)
+    print(f"[human_approval] Verification passed for '{story_id}'. Requesting human approval...")
+
+    decision = interrupt(
+        {
+            "action": "human_approval_required",
+            "message": f"Verification passed for '{story_id}'. Choose next step.",
+            "options": ["approve", "retry", "stop"],
+            "story_id": story_id,
+            "attempt": attempt,
+        }
+    )
+
+    print(f"[human_approval] Resumed with human decision: '{decision}'")
+
+    if decision == "approve":
+        return Command(goto=END, update={"status": "passed"})
+    elif decision == "retry":
+        return Command(goto="dev", update={"status": "running"})
+    else:
+        return Command(goto=END, update={"status": "stopped"})
 
 
 def failed(state: FactoryState) -> dict:
@@ -311,10 +335,10 @@ def create_factory_graph():
         },
     )
 
-    builder.add_edge("human_approval", END)
+    # human_approval dynamically routes via Command(goto=...), so no static edge is needed
     builder.add_edge("failed", END)
 
-    return builder.compile()
+    return builder.compile(checkpointer=MemorySaver())
 
 
 # Export compiled graph instance for Studio & runner
